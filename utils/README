@@ -1,0 +1,121 @@
+	*****                       *****
+	    * Otrclick-Utils v0.1.1 *
+	*****                       *****
+			
+Otrclick-Utils ist eine Sammlung von Python Scripts zur Benutzung mit otrclick.py:
+
+	otrclick-starter.py:
+		vereinfachter Starter von otrclick.py. otrclick.py wird nur ausführt,
+		wenn noch an dem Tag nach Banner geklicked werden können.
+		
+		Benutzer und Passwort müssen nur einmal in Script Konfiguration
+		eingegegeben werden.
+		
+		Verwaltet XML-Logdateien im Format logMMJJJJ.xml .
+		Verwartet Autologindateien in cookies.txt.
+		Grobe Fehler von otrclick.py werden in error.log gespeichert.
+		
+		Das Script legt die Dateien in ein beliebiges Verzeichnis ab.
+		
+	otrclick-view.py:
+		Webinterface zu den otrclick.py-Logdateien. Die Benutzung von
+		otrclick-starter.py wird noch verrausgesetzt! (siehe TODO-Liste)
+		
+***** VORRAUSETZUNGEN *****
+
+	python >= 2.4 (http://www.python.org/)
+	
+	otrclick-view.py:
+		CGI Server
+		
+	Die Benutzung mit Windows wurde nicht getestet!
+		
+***** INSTALLATION *****
+
+	otrclick-starter.py:
+		muss im gleichen Verzeichniss liegen wie otrclick.py.
+
+***** BENUTZUNG *****
+  
+	otrclick-starter.py:
+	    VOR ERSTEM START:
+		E-Mail Adresse(email) und Password(pwd) für OTR sowie
+		den gewünschten Ordner(path) in den ersten Zeilen des Scripts eintragen.		
+		Wird der gewünschte Ordner(path) auf "" gesetzt, dann wird der Ordner
+		.otrclick im Benutzerverzeichniss benutzt (/home/BENUTZER/.otrclick).
+		
+		otrclick-starter.py können auch Optionen übergeben werden, diese werden
+		an otrclick.py weitergeleitet.
+		Beispiel:
+		  ./otrclick-starter.py --number 3 --min 0.3
+		  		
+		Es wird die Benutzung mit cron oder anacron empfohlen, um eine
+		komplette Automatisierung zu erhalten.
+	
+	otrclick-view.py:
+	    VOR ERSTEM START:
+		In den ersten Zeilen des Scripts muss der in otrclick-starter.py
+		eingetragene Ordner(path) nochmals eingetragen werden.
+		
+		Das Script kann einfach über eine CGI Schnittstelle aufgerufen werden.	
+
+***** WEITERVERBREITUNG *****
+
+	Otrclick-Utils steht unter GPL v3.
+	
+***** UNTERSTÜTZUNG *****
+
+	Bei Fragen, Fehlern, Wünschen und Ähnlichen wenden Sie sich an 
+	R1tschY <r1tschy@yahoo.de> 
+
+***** TODO-LISTE *****
+	
+	- Windows testen
+	- Prüfung auf Otrclick Version
+	- Bessere Kommentierung
+
+	otrclick-view.py:
+	  - die Benutzung von otrclick-starter.py nicht mehr vorraus setzen. (möglich?)
+    - Design verbessern
+
+***** ÄNDERUNGEN *****
+
+===== 15. 06. 2011 =====
+	Version: (0.1.1)
+	- für OTRv2 GWP in Credits umbenannt
+	- benutze makedirs satt mkdir
+
+===== 15. 06. 2011 =====
+	Version: (0.1.0)
+	- dir ist heißt jetzt path
+	- Aktuallisierung der README Datei
+	- erste öffentliche Freigabe
+	
+===== 06. 04. 2010 =====
+	Version: (0.1.0 unreleased beta)
+	
+	- Beseitigung kleinerer Fehler
+	- index.py heißt jetzt otrclick-view.py
+
+===== 06. 03. 2011 =====
+	Version: (0.1.0 unreleased beta)
+	- verschiedene Probleme im otrclick-starter.py behoben
+  - index.py unterstützt jetzt die Archiv Logfiles
+
+===== 13. 12. 2010 =====
+	Version: (0.1.0 unreleased beta)
+	
+	- Beseitigung von Fehler bei Nichtverwendung der debug Option
+	- error.log Pfad ist jetzt absolut
+	- Bei groben Fehler, Fehlermeldung in stderr
+	- in error.log steht jetzt die Uhrzeit richtig drin
+	- index.py gibt error.log Inhalt als Fehlerinformationen aus
+	
+===== 02. 12. 2010 =====
+	Version: (0.1.0 unreleased beta)
+	
+	- Erstellung dieser README Datei
+	- Logfiles jetzt im Format logMMJJJJ.xml
+	- in error.log wird jetzt Datum und Uhrzeit mit ausgegeben
+	- zusätzliche Option --debug
+	

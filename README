@@ -1,0 +1,86 @@
+	*****                 *****
+	    * Otrclick v0.4   *
+	*****                 *****
+			
+Otrclick ist ein Python Script zur Automatisierung
+von Bannerklicks auf OTR.
+
+***** VORRAUSETZUNGEN *****
+
+	python >= 2.4 (http://www.python.org/)
+	
+	Die Benutzung mit Windows wurde nicht getestet!
+
+***** INSTALLATION *****
+
+	Die Installation kann in ein beliebiges Verzeichniss erfolgen.
+	
+	Bei der Benutzung von Otrclick-Utils muss darauf geachtet werden, das
+	otrclick-starter.py im gleichen Verzeichniss liegen muss wie otrclick.py.
+
+***** BENUTZUNG *****
+
+	Syntax: otrclick.py [Optionen] --login=<EMAIL-ADRESSE:PASSWORT>
+	
+	Damit Otrclick sich einloggen kann, benötigt es die E-Mail Adresse sowie
+	das	Passwort des OTR Accounts.
+	
+	Weitere Optionen beim Aufruf von "./otrclick.py --help".
+	
+	Beispiel der Benutzung:
+	  ./otrclick.py --login=maxmustermann@beispiel.de:password --number 3 --min 0.3
+
+***** WEITERVERBREITUNG *****
+
+	Otrclick steht unter GPL v3.
+	
+***** UNTERSTÜTZUNG *****
+
+	Bei Fragen, Fehlern, Wünschen und Ähnlichen wenden Sie sich an mich,
+	R1tschY <r1tschy@yahoo.de> 
+
+***** TODO-LISTE *****
+
+	- Windows testen
+	- Bannerliste nutzen
+	- bei TOOMUCH und NOTALLOWED abbrechen
+
+***** ÄNDERUNGEN *****
+
+===== 29. 02. 2012 =====
+	Version: (0.4 unreleased)
+	- Login über OTRv2
+
+===== 23. 02. 2012 =====
+	Version: (0.4 unreleased)
+	- Verarbeitung von urllib2.HTTPError in HttpRequest.loadRawPostRequest
+	- Unterstützung der Version 2 von OTR
+
+===== 15. 06. 2011 =====
+	Version: (0.3.0)
+	- erste öffentliche Freigabe
+
+=== 14. 04. 2011 ===
+  Version: (0.3.0 unreleased beta)
+  - Fehler in strsplittoi behoben: leere Listen werden auch leere Listen
+
+=== 06. 04. 2011 ===
+	Version: (0.3.0 unreleased beta)
+	- kleinere Bugfixes
+	- ultrarequest.py in otrclick verlegt als HTTPRequest
+
+=== 06. 03. 2011 ===
+	Version: (0.3.0 unreleased beta)
+	- alle Otrclick member mit None initalisieren
+
+=== 14. 12. 2010 ===
+	Version: (0.3.0 unreleased beta)
+	- Schließe urllib2.opener Objekt
+
+=== 02. 12. 2010 ===
+	Version: (0.3.0 unreleased beta)
+	  - verbesserte Kommentierung  
+	  - Erstellung dieser README Datei
+	  - Bug: ASCII Strings mit Unicode Zeichen in Unicode Strings umgewandelt
+	  - bei verbose immer Ausgabe auch wenn Logfile vorhanden
+	  
