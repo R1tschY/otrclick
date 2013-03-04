@@ -1,5 +1,5 @@
 	*****                       *****
-	    * Otrclick-Utils v0.1.1 *
+	    * Otrclick-Utils v0.1.2 *
 	*****                       *****
 			
 Otrclick-Utils ist eine Sammlung von Python Scripts zur Benutzung mit otrclick.py:
@@ -79,6 +79,11 @@ Otrclick-Utils ist eine Sammlung von Python Scripts zur Benutzung mit otrclick.p
     - Design verbessern
 
 ***** ÄNDERUNGEN *****
+
+===== 04. 03. 2013 =====
+	Version: (0.1.2)
+	- für OTRv2 Credits in Cents umbenannt
+	- benutze makedirs satt mkdir (endlich)
 
 ===== 15. 06. 2011 =====
 	Version: (0.1.1)

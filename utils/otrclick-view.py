@@ -3,10 +3,10 @@
 
 """Skript für zur Ansicht von otrclick.py XML-Logfiles"""
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 
 __copyright__ = """
-Copyright (c) 2010-2012 R1tschY.  All rights reserved.
+Copyright (c) 2010-2013 R1tschY.  All rights reserved.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -245,7 +245,7 @@ while child is not None:
 		time_array = child.properties.children.content.split(',')
 		date = time_array[0]
 		thistime = time_array[1]
-	item = '<div class="item"><div class="itemheader">'+lastdate+' <b>Credits: '+str(sessionsum)+'</b>'
+	item = '<div class="item"><div class="itemheader">'+lastdate+' <b>Cents: '+str(sessionsum)+'</b>'
 	if errors > 0:
 		item += ' :: <b> '+str(errors)+' Fehler</b>'
 	item += '</div>'+table+"</table></div>"

@@ -1,5 +1,5 @@
 	*****                 *****
-	    * Otrclick v0.4   *
+	    * Otrclick v0.4.1 *
 	*****                 *****
 			
 Otrclick ist ein Python Script zur Automatisierung
@@ -8,8 +8,6 @@ von Bannerklicks auf OTR.
 ***** VORRAUSETZUNGEN *****
 
 	python >= 2.4 (http://www.python.org/)
-	
-	Die Benutzung mit Windows wurde nicht getestet!
 
 ***** INSTALLATION *****
 
@@ -41,11 +39,14 @@ von Bannerklicks auf OTR.
 
 ***** TODO-LISTE *****
 
-	- Windows testen
 	- Bannerliste nutzen
 	- bei TOOMUCH und NOTALLOWED abbrechen
 
 ***** ÄNDERUNGEN *****
+
+===== 04. 03. 2013 =====
+	Version: (0.4.1)
+	- Update für Seitenveränderungen
 
 ===== 29. 02. 2012 =====
 	Version: (0.4 unreleased)

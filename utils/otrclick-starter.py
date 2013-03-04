@@ -3,10 +3,10 @@
 
 """Skript für einfache Verwendung von otrclick.py"""
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 
 __copyright__ = """
-Copyright (c) 2010-2012 R1tschY.  All rights reserved.
+Copyright (c) 2010-2013 R1tschY.  All rights reserved.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -34,19 +34,19 @@ pwd   = "password"
 path  = "~/otrclick"
 # Konfiguration Ende
 
-##### Einrichtung
+# #### Einrichtung
 
 if path == "":
     path = os.path.join(os.path.expanduser("~"),".otrclick")
     
 if not os.path.exists(path):
-    os.mkdir(path)
+    os.makedirs(path)
    
 os.chdir(path)
 
 args = sys.argv[1:]
 
-##### Debug
+# #### Debug
 
 if "--help" in args:
     print "Benutzung: otrclick-starter.py [--debug] [otrclick.py options]"
@@ -59,7 +59,7 @@ if "--debug" in args:
 else:
     verbose = "--quiet"
 
-##### Blockfile
+# #### Blockfile
 # Verhindert Aufrufe wenn schon alles geklicked wurde
 
 day = time.strftime("%d%m%Y")
@@ -72,11 +72,11 @@ if os.path.exists("blockfile"):
         sys.exit()
     f.close()
 
-##### Logfile
+# #### Logfile
 
 logfilename = "log" + time.strftime("%m%Y") + ".xml"
 
-##### Aufruf des Otrclick Scripts
+# #### Aufruf des Otrclick Scripts
     
 import otrclick
 
