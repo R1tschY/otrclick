@@ -308,7 +308,7 @@ class XmlLog:
         self.f.write(u"<session time=\"%s\">\n" % datetime.now().strftime("%d. %b %Y, %H:%M:%S"))
         
     def write_tag(self, tag, content):
-        self.f.write(u"  <"+unicode(tag)+u">"+unicode(content)+u"</"+unicode(tag)+u">\n")
+        self.f.write("  <"+tag+">"+content+"</"+tag+">\n")
     
     def close(self):
         self.f.write(u"</session>\n</log>\n")  
@@ -422,17 +422,17 @@ class Otrclick:
             if self.options.autologin:
               html = self.request.loadRequest(OTR_URL+'/v2/index.php?go=banner')
               
-              if html.find(r'top.location.href="index.php?go=home&need_login=true";') != -1:
+              if html.find(r'<input type="password" name="password"') != -1:
                 info("kein Autologin möglich")
-              else:
+              else:            
                 info("Autologin erfolgreich")
                 logined = True
-            
+
             # wenn Loginformular vorhanden ist, dann einloggen
             if not logined:
               html = self.request.loadRequest(OTR_URL+'/v2/')
               info("Startseite erfolgreich geholt")
-              if html.find(r'<input type="password" name="password" class="bigtextfield"') != -1:
+              if html.find(r'<input type="password" name="password"') != -1:
                   post = {"email": self.options.email, "password": self.options.pwd, "btn_login": " Anmelden "}
                   if self.options.autologin:
                       post.update({"rememberlogin": "on"})
@@ -464,6 +464,7 @@ class Otrclick:
             
             # Hole Banner
             self.bannerfinder = BannerFinder()
+            html = self.request.loadRequest(OTR_URL+'/v2/ajax/get_top_banner.php')
             self.bannerfinder.find(html)
             if self.bannerfinder.bannerclickedOld > 0:
                 clickable = 10 - self.bannerfinder.bannerclickedOld
