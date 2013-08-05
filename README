@@ -48,6 +48,7 @@ von Bannerklicks auf OTR.
 	Version: (0.4.2)
 	- Fehler bei Unicodezeichen behoben
 	- Update für Seitenveränderungen
+	- Firefox-User-Agent-Version berechnen
 
 ===== 04. 03. 2013 =====
 	Version: (0.4.1)

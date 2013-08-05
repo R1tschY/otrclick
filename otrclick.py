@@ -95,8 +95,12 @@ class RequestError(IOError):
         return self.__str__()        
 
 class HttpRequest:
+    def getFirefoxVersion(self):
+       version = round((datetime.now() - datetime(2013, 7, 17)).days / (6.*7.+2)) + 22
+       return "Mozilla/5.0 (X11; Linux x86_64; rv:%.1f) Gecko/20100101 Firefox/%.1f" % (version, version)
+   
     def __init__(self):
-        self.spoofingheader = [("User-Agent", "Mozilla/5.0"),
+        self.spoofingheader = [("User-Agent", self.getFirefoxVersion()),
                                ("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"),
                                ("Accept-Language", "de-de,de;q=0.8,en-us;q=0.5,en;q=0.3"),
                                ("Accept-Encoding", "gzip,deflate"),
