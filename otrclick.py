@@ -3,7 +3,7 @@
 
 """Skript für das automatisierte Klicken von OTR-Bannern"""
 
-__version__ = "0.4.1"
+__version__ = "0.4.2"
 
 __copyright__ = """
 Copyright (c) 2010-2013 R1tschY.  All rights reserved.
@@ -294,7 +294,7 @@ class XmlLog:
             self.newfile = True;   
             
         if (self.newfile):
-            f.write("<log>\n")
+            f.write(u"<log>\n")
         else:
             f.seek(-15, 2) #SEEK_END = 2
             endoffile = f.read(16)
@@ -305,13 +305,13 @@ class XmlLog:
                 f.seek(-15 + xmlend, 2) #SEEK_END = 2
                 
         self.f = f
-        self.f.write("<session time=\"%s\">\n" % datetime.now().strftime("%d. %b %Y, %H:%M:%S"))
+        self.f.write(u"<session time=\"%s\">\n" % datetime.now().strftime("%d. %b %Y, %H:%M:%S"))
         
     def write_tag(self, tag, content):
-        self.f.write(u"  <"+unicode(tag)+u">"+unicode(content)+u"</"+tag+u">\n")
+        self.f.write(u"  <"+unicode(tag)+u">"+unicode(content)+u"</"+unicode(tag)+u">\n")
     
     def close(self):
-        self.f.write("</session>\n</log>\n")  
+        self.f.write(u"</session>\n</log>\n")  
         self.f.close()
         
 

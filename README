@@ -1,5 +1,5 @@
 	*****                 *****
-	    * Otrclick v0.4.1 *
+	    * Otrclick v0.4.2 *
 	*****                 *****
 			
 Otrclick ist ein Python Script zur Automatisierung
@@ -43,6 +43,10 @@ von Bannerklicks auf OTR.
 	- bei TOOMUCH und NOTALLOWED abbrechen
 
 ***** ÄNDERUNGEN *****
+
+===== 05. 08. 2013 =====
+	Version: (0.4.2)
+	- Fehler bei Unicodezeichen behoben
 
 ===== 04. 03. 2013 =====
 	Version: (0.4.1)
