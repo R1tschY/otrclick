@@ -27,7 +27,6 @@ MA 02110-1301, USA.
 
 from optparse import OptionParser
 from datetime import datetime
-from urlparse import urlparse
 
 import time
 import re
@@ -41,6 +40,7 @@ import urllib
 import gzip
 import StringIO
 import socket
+import xml.sax.saxutils as xmlutils
 
 otrclick = None
 
@@ -312,7 +312,7 @@ class XmlLog:
         self.f.write(u"<session time=\"%s\">\n" % datetime.now().strftime("%d. %b %Y, %H:%M:%S"))
         
     def write_tag(self, tag, content):
-        self.f.write("  <"+tag+">"+content+"</"+tag+">\n")
+        self.f.write("  <"+tag+">"+xmlutils.escape(content)+"</"+tag+">\n")
     
     def close(self):
         self.f.write(u"</session>\n</log>\n")  
@@ -441,7 +441,6 @@ class Otrclick:
                   if self.options.autologin:
                       post.update({"rememberlogin": "on"})
                   
-                  bannersite = False
                   html = self.request.loadPostRequest(OTR_URL+'/v2/?go=login', post)
                   if (html.find("Das Passwort ist nicht korrekt.") != -1):
                       error("Logindaten falsch!")
