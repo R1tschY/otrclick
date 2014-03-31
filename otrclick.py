@@ -155,6 +155,10 @@ class HttpRequest:
         # für Python 2.4:
         except ValueError, e:
             raise RequestError(url, e.args[0].split(':')[0])
+            
+        # für Python 2.4:
+        except Exception, e:
+            raise RequestError(url, str(e))
                 
     def loadPostRequest(self, url, data):
         return self.loadRawPostRequest(url, urllib.urlencode(data))

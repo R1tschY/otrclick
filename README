@@ -41,6 +41,8 @@ von Bannerklicks auf OTR.
 
 	- Bannerliste nutzen
 	- bei TOOMUCH und NOTALLOWED abbrechen
+	- Vor erster Anfrage zufällige Zeit warten (über CLI-Option)
+	- wenn Seite nicht erreichbar nach bestimmter Zeit nochmal versuchen (3-mal)
 
 ***** ÄNDERUNGEN *****
 
