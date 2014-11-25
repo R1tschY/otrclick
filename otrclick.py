@@ -3,7 +3,7 @@
 
 """Skript für das automatisierte Klicken von OTR-Bannern"""
 
-__version__ = "0.4.2"
+__version__ = "0.4.3"
 
 __copyright__ = """
 Copyright (c) 2010-2013 R1tschY.  All rights reserved.

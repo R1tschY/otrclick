@@ -31,17 +31,17 @@ import time
 # Konfiguration
 email = "mail@example.com"
 pwd   = "password"
-path  = "~/otrclick"
+path  = ""
 # Konfiguration Ende
 
 # #### Einrichtung
 
 if path == "":
     path = os.path.join(os.path.expanduser("~"),".otrclick")
-    
+
 if not os.path.exists(path):
     os.makedirs(path)
-   
+
 os.chdir(path)
 
 args = sys.argv[1:]
@@ -54,7 +54,7 @@ if "--help" in args:
 
 if "--debug" in args:
     i = args.index("--debug")
-    args = args[:i] + args[i+1:]    
+    args = args[:i] + args[i+1:]
     verbose = "--verbose"
 else:
     verbose = "--quiet"
@@ -77,7 +77,7 @@ if os.path.exists("blockfile"):
 logfilename = "log" + time.strftime("%m%Y") + ".xml"
 
 # #### Aufruf des Otrclick Scripts
-    
+
 import otrclick
 
 session = otrclick.Otrclick()
@@ -88,22 +88,22 @@ try:
                                "--xmllog", os.path.join(path, logfilename),
                                "--cookiefile", os.path.join(path, "cookies.txt")]
                                + args))
-    
-    session.process()     
+
+    session.process()
     # TODO: prüfe rückgabewert
     if session.getStillClickableBanner() == 0:
         f = open("blockfile","w")
         f.write(day)
-        f.close()  
-        
-    session.close()    
-    
-# für Python 2.4 
+        f.close()
+
+    session.close()
+
+# für Python 2.4
 #  kein except exp as e
 #  kein finally und except in gleichem try-Block
 except Exception, e:
     import traceback
-    
+
     f = open(os.path.join(path, "error.log"), "a")
     f.write("!!! " + time.strftime("%H:%M %d.%m.%Y\n"))
     traceback.print_exc(file=f)
@@ -111,6 +111,6 @@ except Exception, e:
 
     session.close()
 
-    
-    
-    
+
+
+
