@@ -41,6 +41,7 @@ import gzip
 import StringIO
 import socket
 import xml.sax.saxutils as xmlutils
+import codecs
 
 otrclick = None
 
@@ -53,25 +54,21 @@ OTR_URL = base64.b64decode("aHR0cDovL3d3dy5vbmxpbmV0dnJlY29yZGVyLmNvbQ==")
 
 def error(msg):
     if otrclick.options.verbose or (otrclick.xmlfile == None and not otrclick.options.quiet):
-      print "!!!  Fehler:", msg
+      print u"!!!  Fehler:", msg
 
     if not otrclick.options.verbose and otrclick.xmlfile != None:
-      otrclick.xmlfile.write_tag("error", msg)
+      otrclick.xmlfile.write_tag(u"error", msg)
 
 def warning(msg):
     if otrclick.options.verbose or (otrclick.xmlfile == None and not otrclick.options.quiet):
-      print "???  Warnung:", msg
+      print u"???  Warnung:", msg
 
     if not otrclick.options.verbose and otrclick.xmlfile != None:
-      otrclick.xmlfile.write_tag("warning", msg)
+      otrclick.xmlfile.write_tag(u"warning", msg)
 
 def info(msg):
     if otrclick.options.verbose:
-        print "--- ", msg
-
-def escape_xml(data):
-    return data.replace("&", "&amp;").replace(">", "&gt;").replace("<", "&lt;")\
-      .replace("\"", "&quot;").replace("\'", "&#39;")
+        print u"--- ", msg
 
 class SiteChangedError(Exception):
     def __init__(self, msg):
@@ -89,7 +86,7 @@ class RequestError(IOError):
         self.url = url
 
     def __str__(self):
-        return self.url + ": " + self.msg
+        return self.url + u": " + self.msg
 
     def __repr__(self):
         return self.__str__()
@@ -142,11 +139,11 @@ class HttpRequest:
 
         # für Python 2.4:
         except httplib.HTTPException, e:
-            raise RequestError(url, "HTTP Fehler: " + str(e))
+            raise RequestError(url, u"HTTP Fehler: " + str(e))
 
         # für Python 2.4:
         except urllib2.HTTPError, e:
-            raise RequestError(url, "HTTP Fehlercode " + str(e.code))
+            raise RequestError(url, u"HTTP Fehlercode " + str(e.code))
 
         # für Python 2.4:
         except IOError, e:
@@ -197,7 +194,7 @@ class Banner:
 
     # Nur fürs Debugging
     def __str__(self):
-        return "["+str(self.id)+"] -> "+self.target+" ^"+str(self.rating)+"^"
+        return u"["+str(self.id)+u"] -> "+self.target+u" ^"+str(self.rating)+u"^"
 
 class BannerFinder:
     newct = 0.0
@@ -227,51 +224,56 @@ class BannerFinder:
         sorted(self.banners, key=lambda banner: banner.rating, reverse=True)
 
     def click(self, banner):
-        html = otrclick.request.loadRequest(OTR_URL + "/v2/partner/?bid="+str(banner.id)+"&code="+banner.code)
-        r = self.process1regex.search(html)
-        if r == None:
-            raise SiteChangedError("Kann Bannerclickinformation nicht mehr holen (process1regex)")
+        try:
+            html = otrclick.request.loadRequest(OTR_URL + "/v2/partner/?bid="+str(banner.id)+u"&code="+banner.code)
+            r = self.process1regex.search(html)
+            if r == None:
+                raise SiteChangedError(u"Kann Bannerclickinformation nicht mehr holen (process1regex)")
 
-        time.sleep(1)
+            time.sleep(1)
 
-        html = otrclick.request.loadRequest(OTR_URL + "/v2/partner/" + r.group(1))
-        r = self.process2regex.search(html)
-        if r == None:
-            raise SiteChangedError("Kann Bannerclickinformation nicht mehr holen (process2regex)")
+            html = otrclick.request.loadRequest(OTR_URL + "/v2/partner/" + r.group(1))
+            r = self.process2regex.search(html)
+            if r == None:
+                raise SiteChangedError(u"Kann Bannerclickinformation nicht mehr holen (process2regex)")
 
-        html = otrclick.request.loadRequest(OTR_URL + "/v2/partner/" + r.group(0))
-        r = self.clickregex.search(html)
-        if r == None:
-          raise SiteChangedError("Kann Bannerclickinformation nicht mehr holen (clickregex)")
+            html = otrclick.request.loadRequest(OTR_URL + "/v2/partner/" + r.group(0))
+            r = self.clickregex.search(html)
+            if r == None:
+              	raise SiteChangedError(u"Kann Bannerclickinformation nicht mehr holen (clickregex)")
 
-        # eine Zeit warten
-        time.sleep(random.randint(20, 35))
+            # eine Zeit warten
+            time.sleep(random.randint(10, 30))
 
-        # Klicken:
-        result = otrclick.request.loadPostRequest(OTR_URL + "/v2/partner/credit.php",
-            {"cs":r.group(1), "bid":r.group(2)})
+            # Klicken:
+            result = otrclick.request.loadPostRequest(OTR_URL + "/v2/partner/credit.php",
+                {"cs":r.group(1), "bid":r.group(2)})
 
-        if result == "ERROR":
-          warning(u"Bannerclick nicht erfolgreich: Banner schon geklicked?")
-        elif result == "NOTALLOWED":
-          warning(u"Bannerclick nicht erfolgreich: Sie haben über 60 Punkte und dürfen daher nur als Premium-User Banner klicken.")
-        elif result == "INVALID":
-          warning(u"Bannerclick nicht erfolgreich: Dieses Banner konnte im Moment nicht verarbeitet werden.")
-        elif result == "TOOMUCH":
-          warning(u"Bannerclick nicht erfolgreich: Sie haben heute schon die maximal erlaubte Anzahl an Bannern geklickt.")
-        else:
-          info('Bannerclick erfolgreich: #%d +%.2f' % (banner.id, banner.rating))
-          self.newct += banner.rating
-          self.bannerclicked += 1
-          if self.bannerclickedOld == -1:
-            self.bannerclickedOld = int(result) - 1
+            if result == "ERROR":
+              warning(u"Bannerclick nicht erfolgreich: Banner schon geklicked?")
+            elif result == "NOTALLOWED":
+              warning(u"Bannerclick nicht erfolgreich: Sie haben zu viele Punkte und dürfen daher nur noch als Premium-User Banner klicken.")
+            elif result == "INVALID":
+              warning(u"Bannerclick nicht erfolgreich: Dieses Banner konnte im Moment nicht verarbeitet werden.")
+            elif result == "TOOMUCH":
+              warning(u"Bannerclick nicht erfolgreich: Sie haben heute schon die maximal erlaubte Anzahl an Bannern geklickt.")
+            else:
+              info(u'Bannerclick erfolgreich: #%d +%.2f' % (banner.id, banner.rating))
+              self.newct += banner.rating
+              self.bannerclicked += 1
+              if self.bannerclickedOld == -1:
+                self.bannerclickedOld = int(result) - 1
+				        
+        except (IOError):
+            warning(str(e))
+        
 
     def find(self, html):
         clicked = self.clickedregex.search(html)
         if clicked == None:
-          warning("Kann Anzahl der Bannerclicks nicht finden")
+          	warning(u"Kann Anzahl der Bannerclicks nicht finden")
         else:
-          self.bannerclickedOld = int(clicked.group(1))
+          	self.bannerclickedOld = int(clicked.group(1))
 
         visited = self.visitedregex.findall(html)
         banners = self.adregex.findall(html)
@@ -287,7 +289,7 @@ class BannerFinder:
 
               self.banners.append(banner)
 
-        info("hab " + str(len(self.banners)) + " klickbare Banner / " + str(self.bannerclickedOld) + " wurde(n) schon geklicked")
+        info(u"hab {0} klickbare Banner / {1} wurde(n) schon geklicked.".format(len(self.banners), self.bannerclickedOld))
 
 class XmlLog:
     def __init__(self, filename):
@@ -296,10 +298,10 @@ class XmlLog:
 
     def open(self):
         try:
-            f = open(self.filename, "r+")
+            f = codecs.open(self.filename, "r+", encoding='utf-8')
         except (IOError):
             try:
-                f = open(self.filename, "w")
+                f = codecs.open(self.filename, "w", encoding='utf-8')
             except (IOError):
                 error(u"Kann Logfile nicht öffnen")
                 return
@@ -317,10 +319,10 @@ class XmlLog:
                 f.seek(-15 + xmlend, 2) #SEEK_END = 2
 
         self.f = f
-        self.f.write(u"<session time=\"%s\">\n" % datetime.now().strftime("%d. %b %Y, %H:%M:%S"))
+        self.f.write(u"<session time=\"%s\">\n" % datetime.now().strftime(u"%d. %b %Y, %H:%M:%S"))
 
     def write_tag(self, tag, content):
-        self.f.write(u"  <%s>%s</%s>\n" % (tag, xmlutils.escape(content), tag))
+        self.f.write(u"  <{0}>{1}</{0}>\n".format(tag, xmlutils.escape(content)))
 
     def close(self):
         self.f.write(u"</session>\n</log>\n")
@@ -329,37 +331,37 @@ class XmlLog:
 
 class OptParser:
     def __init__(self):
-        self.parser = OptionParser(usage=u"Syntax: %prog [Optionen] --login=<email:password>", version="%prog "+__version__)
+        self.parser = OptionParser(usage=u"Syntax: %prog [Optionen] --login=<email:password>", version=u"%prog "+__version__)
 
-        self.parser.add_option("-l", "--login",
+        self.parser.add_option(u"-l", u"--login",
                                help=u"Logindaten setzen",
-                               metavar="<email:password>")
-        self.parser.add_option("-v", "--verbose",
-                            action="store_true",
+                               metavar=u"<email:password>")
+        self.parser.add_option(u"-v", "--verbose",
+                            action=u"store_true",
                             help=u"Informationen u:ber die durchgefu:hren Operationen ausgeben",
                             default=False)
-        self.parser.add_option("-q", "--quiet",
-                            action="store_true",
+        self.parser.add_option(u"-q", u"--quiet",
+                            action=u"store_true",
                             help=u"nichts ausgeben",
                             default=False)
-        self.parser.add_option("-x", "--xmllog",
+        self.parser.add_option(u"-x", u"--xmllog",
                             help=u"XML-Logfile fu:r Fehler und Statistik",
-                            metavar="<file>")
-        self.parser.add_option("-m", "--min",
+                            metavar=u"<file>")
+        self.parser.add_option(u"-m", u"--min",
                             help=u"nur Banner mit mehr Cents klicken",
-                            type="float",
+                            type=u"float",
                             default=0.0,
-                            metavar="<CENTS>")
-        self.parser.add_option("-c", "--cookiefile",
+                            metavar=u"<CENTS>")
+        self.parser.add_option(u"-c", u"--cookiefile",
                             help=u"Cookiefile fu:r Autologin",
-                            metavar="<FILE>")
-        self.parser.add_option("-n", "--number",
+                            metavar=u"<FILE>")
+        self.parser.add_option(u"-n", u"--number",
                             help=u"maximal so viele Banner klicken",
-                            type="int",
+                            type=u"int",
                             default=10,
-                            metavar="<NUMBER>")
-        self.parser.add_option("-s", "--stat",
-                            action="store_true",
+                            metavar=u"<NUMBER>")
+        self.parser.add_option(u"-s", u"--stat",
+                            action=u"store_true",
                             default=False,
                             help=u"gibt Statistik zuru:ck")
 
@@ -411,7 +413,7 @@ class Otrclick:
         if otrclick == None:
             otrclick = self
 
-        info("Otrclick "+__version__)
+        info(u"Otrclick "+__version__)
 
         random.seed()
 
@@ -425,7 +427,7 @@ class Otrclick:
         if self.options.cookiefile != None:
             self.request.setCookiefile(self.options.cookiefile)
 
-        self.request.setCookie("clicked%s" % datetime.now().strftime("%Y%m%d"),
+        self.request.setCookie("clicked%s" % datetime.now().strftime(u"%Y%m%d"),
           "1", OTR, int(time.time()+ 2 *24*60*60*1000))
 
         try:
@@ -435,14 +437,14 @@ class Otrclick:
 
             if self.options.autologin:
               if html.find(r'<input type="password" name="password"') != -1:
-                info("kein Autologin möglich")
+                info(u"kein Autologin möglich")
               else:
-                info("Autologin erfolgreich")
+                info(u"Autologin erfolgreich")
                 logined = True
 
             # wenn Loginformular vorhanden ist, dann einloggen
             if not logined:
-              info("Startseite erfolgreich geholt")
+              info(u"Startseite erfolgreich geholt")
               if html.find(r'<input type="password" name="password"') != -1:
                   post = {"email": self.options.email, "password": self.options.pwd, "btn_login": " Anmelden "}
                   if self.options.autologin:
@@ -450,10 +452,10 @@ class Otrclick:
 
                   html = self.request.loadPostRequest(OTR_URL+'/v2/?go=login', post)
                   if (html.find("Das Passwort ist nicht korrekt.") != -1):
-                      error("Logindaten falsch!")
+                      error(u"Logindaten falsch!")
                       return
                   else:
-                      info("Login erfolgreich")
+                      info(u"Login erfolgreich")
 
                   if self.options.autologin:
                       # Autologin-Cookies suchen und setzen
@@ -465,12 +467,12 @@ class Otrclick:
                           self.request.setCookie("otr_email", self.options.email, OTR, t)
                           self.request.setCookie("otr_password", i.group(1), OTR, t)
                       else:
-                          warning("Konnte Autologin-Javascript-Cookies nicht finden!")
+                          warning(u"Konnte Autologin-Javascript-Cookies nicht finden!")
               else:
-                raise SiteChangedError("Login hat sich verändert")
+                raise SiteChangedError(u"Login hat sich verändert")
 
             # Hole Banner
-            info("Hole Banner")
+            info(u"Hole Banner")
             self.bannerfinder = BannerFinder()
             html = self.request.loadRequest(OTR_URL+'/v2/ajax/get_top_banner.php')
             self.bannerfinder.find(html)
@@ -480,14 +482,14 @@ class Otrclick:
                 clickable = 10
 
             if clickable < 1:
-                warning("Heute schon alle Banner geklicked")
+                warning(u"Heute schon alle Banner geklicked")
                 return RESULT_NO_MORE_BANNER
 
             if self.bannerfinder.possiblebanners == 0:
-                raise SiteChangedError("Kann Bannerlinks nicht mehr holen")
+                raise SiteChangedError(u"Kann Bannerlinks nicht mehr holen")
 
             if len(self.bannerfinder.banners) == 0:
-                warning("Keine klickbaren Banner gefunden")
+                warning(u"Keine klickbaren Banner gefunden")
                 return RESULT_OK
 
             self.bannerfinder.sort()
@@ -502,13 +504,13 @@ class Otrclick:
 
                 self.bannerfinder.click(banner)
 
-                info(str(self.bannerfinder.bannerclicked)+" von "+str(toclick)+" Banner erfolgreich geklicked")
+                info(str(self.bannerfinder.bannerclicked)+u" von "+str(toclick)+u" Banner erfolgreich geklicked")
 
             if not self.options.stat:
-                info("neue " + str(self.bannerfinder.newct) + " Cents")
+                info(u"neue " + str(self.bannerfinder.newct) + u" Cents")
 
             if otrclick.xmlfile != None:
-                otrclick.xmlfile.f.write("  <click><id>0</id><gwp>%.2f</gwp><target>%d Banner geklicked</target></click>\n" % \
+                otrclick.xmlfile.f.write(u"  <click><id>0</id><gwp>%.2f</gwp><target>%d Banner geklicked</target></click>\n" % \
                                            (self.bannerfinder.newct, self.bannerfinder.bannerclicked))
 
         # für Python 2.4:
@@ -520,7 +522,7 @@ class Otrclick:
             if otrclick.xmlfile == None:
                 error(u"Änderung der Seite: " + str(e))
             else:
-                otrclick.xmlfile.write_tag("badstate", str(e))
+                otrclick.xmlfile.write_tag(u"badstate", str(e))
             return RESULT_SITE_CHANGED
 
         return RESULT_OK
@@ -533,9 +535,9 @@ class Otrclick:
             self.xmlfile.close()
 
         if self.options and self.options.stat:
-            print "Neue Cents:",self.getNewCents()
-            print "Geklickte Banner:",self.getClickedBanner()
-            print "Noch klickbare Banner:",self.getStillClickableBanner()
+            print u"Neue Cents:",self.getNewCents()
+            print u"Geklickte Banner:",self.getClickedBanner()
+            print u"Noch klickbare Banner:",self.getStillClickableBanner()
 
     def getNewCents(self):
         if self.bannerfinder != None:

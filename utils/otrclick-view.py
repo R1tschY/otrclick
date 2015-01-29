@@ -32,6 +32,8 @@ path = "~/otrclick"
 import libxml2, sys, os
 import time
 import cgi
+import codecs
+
 #import cgitb
 #cgitb.enable()
 
@@ -179,7 +181,7 @@ if root.name != "log":
 # error.log Auswertung
 errorlogpath = os.path.join(path, "error.log")
 if os.path.exists(errorlogpath):
-	errorlog = open(errorlogpath)
+	errorlog = codecs.open(errorlogpath,encoding='utf-8')
 	errorlogstr = errorlog.read()
 	errorlog.close()
 else:

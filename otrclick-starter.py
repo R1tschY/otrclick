@@ -27,11 +27,12 @@ MA 02110-1301, USA.
 
 import os, sys
 import time
+import codecs
 
 # Konfiguration
-email = "mail@example.com"
-pwd   = "password"
-path  = ""
+email = "richard.liebscher@googlemail.com"
+pwd   = "maybach"
+path  = "/home/s6612208/public_html/.otrclick"
 # Konfiguration Ende
 
 # #### Einrichtung
@@ -52,7 +53,8 @@ if "--help" in args:
     print "Benutzung: otrclick-starter.py [--debug] [otrclick.py options]"
     sys.exit()
 
-if "--debug" in args:
+debug_mode = "--debug" in args
+if debug_mode:
     i = args.index("--debug")
     args = args[:i] + args[i+1:]
     verbose = "--verbose"
@@ -64,7 +66,7 @@ else:
 
 day = time.strftime("%d%m%Y")
 if os.path.exists("blockfile"):
-    f = open("blockfile","r")
+    f = codecs.open("blockfile","r",encoding='utf-8')
     if day == f.read():
         f.close()
         if verbose == "--verbose":
@@ -86,13 +88,14 @@ try:
                        .parse([verbose,
                                "--login", email + ":" + pwd,
                                "--xmllog", os.path.join(path, logfilename),
-                               "--cookiefile", os.path.join(path, "cookies.txt")]
+                               #"--cookiefile", os.path.join(path, "cookies.txt")
+															 ]
                                + args))
 
     session.process()
     # TODO: prüfe rückgabewert
     if session.getStillClickableBanner() == 0:
-        f = open("blockfile","w")
+        f = codecs.open("blockfile","w", encoding='utf-8')
         f.write(day)
         f.close()
 
@@ -103,8 +106,12 @@ try:
 #  kein finally und except in gleichem try-Block
 except Exception, e:
     import traceback
+    
+    if debug_mode:
+    	print("!!! Exception:")
+    	traceback.print_exc()    	
 
-    f = open(os.path.join(path, "error.log"), "a")
+    f = codecs.open(os.path.join(path, "error.log"), "a", encoding='utf-8')
     f.write("!!! " + time.strftime("%H:%M %d.%m.%Y\n"))
     traceback.print_exc(file=f)
     f.close()
