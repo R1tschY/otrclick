@@ -30,9 +30,9 @@ import time
 import codecs
 
 # Konfiguration
-email = "richard.liebscher@googlemail.com"
-pwd   = "maybach"
-path  = "/home/s6612208/public_html/.otrclick"
+email = "mail@example.com"
+pwd   = "password"
+path  = ""
 # Konfiguration Ende
 
 # #### Einrichtung
