@@ -37,6 +37,7 @@ import base64
 import cookielib
 import os
 import urllib
+import httplib
 import gzip
 import StringIO
 import socket
@@ -263,10 +264,10 @@ class BannerFinder:
               self.bannerclicked += 1
               if self.bannerclickedOld == -1:
                 self.bannerclickedOld = int(result) - 1
-				        
+
         except (IOError):
             warning(str(e))
-        
+
 
     def find(self, html):
         clicked = self.clickedregex.search(html)
