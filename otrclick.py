@@ -94,7 +94,7 @@ class RequestError(IOError):
 
 class HttpRequest:
     def getFirefoxVersion(self):
-       version = round((datetime.now() - datetime(2013, 7, 17)).days / (6.*7.+2)) + 22
+       version = round((datetime.now() - datetime(2016, 3, 8)).days-2 / (6.*7.)) + 45
        return "Mozilla/5.0 (X11; Linux x86_64; rv:%.1f) Gecko/20100101 Firefox/%.1f" % (version, version)
 
     def __init__(self):
