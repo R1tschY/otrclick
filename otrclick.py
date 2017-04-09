@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""Skript für das automatisierte Klicken von OTR-Bannern"""
+"""Skript für das automatisierte Klicken von Bannern auf OTR"""
 
-__version__ = "0.4.3"
+__version__ = "0.5.0"
 
 __copyright__ = """
-Copyright (c) 2010-2013 R1tschY.  All rights reserved.
+Copyright (c) 2010-2017 Richard Liebscher.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -43,6 +43,8 @@ import StringIO
 import socket
 import xml.sax.saxutils as xmlutils
 import codecs
+import requests
+from requests.exceptions import RequestException
 
 otrclick = None
 
@@ -51,7 +53,8 @@ RESULT_IOERROR = 1
 RESULT_NO_MORE_BANNER = 3
 RESULT_SITE_CHANGED = 4
 OTR = base64.b64decode("b25saW5ldHZyZWNvcmRlci5jb20=")
-OTR_URL = base64.b64decode("aHR0cDovL3d3dy5vbmxpbmV0dnJlY29yZGVyLmNvbQ==")
+OTR_URL = base64.b64decode("aHR0cHM6Ly93d3cub25saW5ldHZyZWNvcmRlci5jb20=")
+
 
 def error(msg):
     if otrclick.options.verbose or (otrclick.xmlfile == None and not otrclick.options.quiet):
@@ -60,6 +63,7 @@ def error(msg):
     if not otrclick.options.verbose and otrclick.xmlfile != None:
       otrclick.xmlfile.write_tag(u"error", msg)
 
+
 def warning(msg):
     if otrclick.options.verbose or (otrclick.xmlfile == None and not otrclick.options.quiet):
       print u"???  Warnung:", msg
@@ -67,9 +71,11 @@ def warning(msg):
     if not otrclick.options.verbose and otrclick.xmlfile != None:
       otrclick.xmlfile.write_tag(u"warning", msg)
 
+
 def info(msg):
     if otrclick.options.verbose:
         print u"--- ", msg
+
 
 class SiteChangedError(Exception):
     def __init__(self, msg):
@@ -80,111 +86,24 @@ class SiteChangedError(Exception):
 
     def __repr__(self):
         return self.__str__()
+        
 
-class RequestError(IOError):
-    def __init__(self, url, msg):
-        self.msg = msg
-        self.url = url
-
-    def __str__(self):
-        return self.url + u": " + self.msg
-
-    def __repr__(self):
-        return self.__str__()
-
-class HttpRequest:
-    def getFirefoxVersion(self):
-       version = round((datetime.now() - datetime(2016, 3, 8)).days-2 / (6.*7.)) + 45
+def getHTTPSession():
+    def getFirefoxVersion():
+       version = round(((datetime.now() - datetime(2016, 3, 8)).days-2) / (8.*7.)) + 45
        return "Mozilla/5.0 (X11; Linux x86_64; rv:%.1f) Gecko/20100101 Firefox/%.1f" % (version, version)
 
-    def __init__(self):
-        self.spoofingheader = [("User-Agent", self.getFirefoxVersion()),
-                               ("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"),
-                               ("Accept-Language", "de-de,de;q=0.8,en-us;q=0.5,en;q=0.3"),
-                               ("Accept-Encoding", "gzip,deflate"),
-                               ("Accept-Charset", "ISO-8859-1,utf-8;q=0.7,*;q=0.7"),
-                               ("Keep-Alive", "115")]
-        self.userheaders = {}
-        self.spoofing = False
-        self.cookiefile = None
-        self.hredirect = urllib2.HTTPRedirectHandler()
-        self.hcookies = urllib2.HTTPCookieProcessor()
-        self.opener = urllib2.build_opener(self.hredirect, self.hcookies)
+    session = requests.Session()
+    session.headers.update({
+        "User-Agent": getFirefoxVersion(),
+         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+         "Accept-Language": "de-de,de;q=0.8,en-us;q=0.5,en;q=0.3",
+         "Accept-Encoding": "gzip,deflate",
+         "Accept-Charset": "ISO-8859-1,utf-8;q=0.7,*;q=0.7",
+         "Keep-Alive": "115"
+    })
+    return session
 
-    def close(self):
-        if self.cookiefile != None:
-            self.hcookies.cookiejar.save()
-
-    def setUseragent(self, useragent):
-        self.userheaders["User-Agent"] = useragent
-
-    def setHeaderSpoofing(self, value=True):
-        self.spoofing = value
-
-    def loadRawPostRequest(self, url, data):
-        if (self.spoofing):
-            self.opener.addheaders = self.spoofingheader
-        else:
-            self.opener.addheaders = self.userheaders
-
-        try:
-            f = self.opener.open(url, data)
-            if f.headers.get('Content-Encoding') == 'gzip':
-                data = gzip.GzipFile(fileobj=StringIO.StringIO(f.read())).read()
-                f.close()
-                return data
-            else:
-                data = f.read()
-                f.close()
-                return data
-
-        # für Python 2.4:
-        except httplib.HTTPException, e:
-            raise RequestError(url, u"HTTP Fehler: " + str(e))
-
-        # für Python 2.4:
-        except urllib2.HTTPError, e:
-            raise RequestError(url, u"HTTP Fehlercode " + str(e.code))
-
-        # für Python 2.4:
-        except IOError, e:
-            if isinstance(e.reason, socket.error):
-                msg = e.reason[1]
-            else:
-                msg = str(e.reason)
-            raise RequestError(url, msg)
-
-        # für Python 2.4:
-        except ValueError, e:
-            raise RequestError(url, e.args[0].split(':')[0])
-
-        # für Python 2.4:
-        except Exception, e:
-            raise RequestError(url, str(e))
-
-    def loadPostRequest(self, url, data):
-        return self.loadRawPostRequest(url, urllib.urlencode(data))
-
-    def loadRequest(self, url):
-        return self.loadRawPostRequest(url, None)
-
-    def setCookiefile(self, filename):
-        self.cookiefile = filename
-        self.hcookies.cookiejar = cookielib.MozillaCookieJar(filename)
-        if os.path.isfile(filename):
-            self.hcookies.cookiejar.load()
-
-    def setFullCookie(self, cookie):
-        self.hcookies.cookiejar.set_cookie(cookie)
-
-    def setCookie(self, name, value, domain, expires):
-        self.setFullCookie(cookielib.Cookie(0, name, value,
-                                        None, False,
-                                        domain, True, True,
-                                        "", False,
-                                        False,
-                                        expires,
-                                        False, None, None, ""))
 
 class Banner:
     def __init__(self):
@@ -196,6 +115,7 @@ class Banner:
     # Nur fürs Debugging
     def __str__(self):
         return u"["+str(self.id)+u"] -> "+self.target+u" ^"+str(self.rating)+u"^"
+
 
 class BannerFinder:
     newct = 0.0
@@ -226,19 +146,22 @@ class BannerFinder:
 
     def click(self, banner):
         try:
-            html = otrclick.request.loadRequest(OTR_URL + "/v2/partner/?bid="+str(banner.id)+u"&code="+banner.code)
+            html = otrclick.request.get(
+                OTR_URL 
+                + "/v2/partner/?bid=" 
+                + str(banner.id) + u"&code=" + banner.code).text
             r = self.process1regex.search(html)
             if r == None:
                 raise SiteChangedError(u"Kann Bannerclickinformation nicht mehr holen (process1regex)")
 
             time.sleep(1)
 
-            html = otrclick.request.loadRequest(OTR_URL + "/v2/partner/" + r.group(1))
+            html = otrclick.request.get(OTR_URL + "/v2/partner/" + r.group(1)).text
             r = self.process2regex.search(html)
             if r == None:
                 raise SiteChangedError(u"Kann Bannerclickinformation nicht mehr holen (process2regex)")
 
-            html = otrclick.request.loadRequest(OTR_URL + "/v2/partner/" + r.group(0))
+            html = otrclick.request.get(OTR_URL + "/v2/partner/" + r.group(0)).text
             r = self.clickregex.search(html)
             if r == None:
               	raise SiteChangedError(u"Kann Bannerclickinformation nicht mehr holen (clickregex)")
@@ -247,8 +170,8 @@ class BannerFinder:
             time.sleep(random.randint(10, 30))
 
             # Klicken:
-            result = otrclick.request.loadPostRequest(OTR_URL + "/v2/partner/credit.php",
-                {"cs":r.group(1), "bid":r.group(2)})
+            result = otrclick.request.post(OTR_URL + "/v2/partner/credit.php",
+                data={"cs":r.group(1), "bid":r.group(2)}).text
 
             if result == "ERROR":
               warning(u"Bannerclick nicht erfolgreich: Banner schon geklicked?")
@@ -265,7 +188,7 @@ class BannerFinder:
               if self.bannerclickedOld == -1:
                 self.bannerclickedOld = int(result) - 1
 
-        except (IOError):
+        except RequestException as e:
             warning(str(e))
 
 
@@ -291,6 +214,7 @@ class BannerFinder:
               self.banners.append(banner)
 
         info(u"hab {0} klickbare Banner / {1} wurde(n) schon geklicked.".format(len(self.banners), self.bannerclickedOld))
+
 
 class XmlLog:
     def __init__(self, filename):
@@ -396,6 +320,7 @@ class OptParser:
 
         return options
 
+
 class Otrclick:
     options = None
     xmlfile = None
@@ -418,64 +343,70 @@ class Otrclick:
 
         random.seed()
 
-        self.request = HttpRequest()
-        self.request.setHeaderSpoofing()
+        self.request = getHTTPSession()
 
         if self.options.xmllog != None:
             self.xmlfile = XmlLog(self.options.xmllog)
             self.xmlfile.open()
 
-        if self.options.cookiefile != None:
-            self.request.setCookiefile(self.options.cookiefile)
-
-        self.request.setCookie("clicked%s" % datetime.now().strftime(u"%Y%m%d"),
-          "1", OTR, int(time.time()+ 2 *24*60*60*1000))
+        #if self.options.cookiefile != None:
+        #    self.request.setCookiefile(self.options.cookiefile)
 
         try:
             # Startseite holen
             logined = False
-            html = self.request.loadRequest(OTR_URL+'/v2/')
+            response = self.request.get(OTR_URL+'/v2/')
+            html = response.text
 
-            if self.options.autologin:
-              if html.find(r'<input type="password" name="password"') != -1:
-                info(u"kein Autologin möglich")
-              else:
-                info(u"Autologin erfolgreich")
-                logined = True
+            #if self.options.autologin:
+            #  if html.find(r'<input type="password" name="password"') != -1:
+            #    info(u"kein Autologin möglich")
+            #  else:
+            #    info(u"Autologin erfolgreich")
+            #    logined = True
 
             # wenn Loginformular vorhanden ist, dann einloggen
             if not logined:
               info(u"Startseite erfolgreich geholt")
               if html.find(r'<input type="password" name="password"') != -1:
-                  post = {"email": self.options.email, "password": self.options.pwd, "btn_login": " Anmelden "}
-                  if self.options.autologin:
-                      post.update({"rememberlogin": "on"})
+                  post = {
+                    "email": self.options.email, 
+                    "password": self.options.pwd, 
+                    "btn_login": " Anmelden ",
+                    "rememberlogin": "1"
+                  }
 
-                  html = self.request.loadPostRequest(OTR_URL+'/v2/?go=login', post)
-                  if (html.find("Das Passwort ist nicht korrekt.") != -1):
+                  html = self.request.post(OTR_URL+'/v2/?go=login', data=post).text
+                  if (html.find(r'location.href="?go=home";') != -1
+                        or html.find(r'<input type="password" name="password"') == -1):
+                      info(u"Login erfolgreich")
+                      time.sleep(3)
+                  else:
                       error(u"Logindaten falsch!")
                       return
-                  else:
-                      info(u"Login erfolgreich")
 
-                  if self.options.autologin:
-                      # Autologin-Cookies suchen und setzen
-                      i = re.search(r"'otr_password=([0-9a-f]*);", html)
+                  #if self.options.autologin:
+                  #    # Autologin-Cookies suchen und setzen
+                  #    i = re.search(r"'otr_password=([0-9a-f]*);", html)
 
-                      if i != None:
-                          t = int(time.time()) + 2508480000
+                  #    if i != None:
+                  #        t = int(time.time()) + 2508480000
 
-                          self.request.setCookie("otr_email", self.options.email, OTR, t)
-                          self.request.setCookie("otr_password", i.group(1), OTR, t)
-                      else:
-                          warning(u"Konnte Autologin-Javascript-Cookies nicht finden!")
+                  #        self.request.setCookie("otr_email", self.options.email, OTR, t)
+                  #        self.request.setCookie("otr_password", i.group(1), OTR, t)
+                  #    else:
+                  #        warning(u"Konnte Autologin-Javascript-Cookies nicht finden!")
               else:
                 raise SiteChangedError(u"Login hat sich verändert")
 
             # Hole Banner
             info(u"Hole Banner")
             self.bannerfinder = BannerFinder()
-            html = self.request.loadRequest(OTR_URL+'/v2/ajax/get_top_banner.php')
+            html = self.request.get(OTR_URL+'/v2/index.php?go=banner').text
+            if html.find(r'<input type="password" name="password"') != -1:
+                error('Login gescheitert!')
+                return
+
             self.bannerfinder.find(html)
             if self.bannerfinder.bannerclickedOld > 0:
                 clickable = 10 - self.bannerfinder.bannerclickedOld
@@ -514,12 +445,11 @@ class Otrclick:
                 otrclick.xmlfile.f.write(u"  <click><id>0</id><gwp>%.2f</gwp><target>%d Banner geklicked</target></click>\n" % \
                                            (self.bannerfinder.newct, self.bannerfinder.bannerclicked))
 
-        # für Python 2.4:
-        except IOError, e:
+        except RequestException as e:
             error(str(e))
             return RESULT_IOERROR
-        # für Python 2.4:
-        except SiteChangedError, e:
+            
+        except SiteChangedError as e:
             if otrclick.xmlfile == None:
                 error(u"Änderung der Seite: " + str(e))
             else:
@@ -557,6 +487,7 @@ class Otrclick:
             return 10 - self.bannerfinder.bannerclickedOld - self.bannerfinder.bannerclicked
         else:
             return -1;
+            
 
 if __name__ == "__main__":
     otrclick = Otrclick()
